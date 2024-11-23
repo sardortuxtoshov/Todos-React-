@@ -1,9 +1,13 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import to_do from "../assets/todo_icon.png";
 import TodoItems from "./TodoItems";
 
 export default function Todo() {
-    const [todoList, setTodoList] = useState([]);
+    const [todoList, setTodoList] = useState(
+        localStorage.getItem("todoList")
+            ? JSON.parse(localStorage.getItem("todoList"))
+            : []
+    );
 
     const inputRef = useRef();
 
@@ -25,6 +29,27 @@ export default function Todo() {
 
         inputRef.current.value = "";
     };
+
+    const deleteTodo = (id) => {
+        setTodoList((prvTodo) => {
+            return prvTodo.filter((todo) => todo.id !== id);
+        });
+    };
+
+    const toggle = (id) => {
+        setTodoList((prevTodo) => {
+            return prevTodo.map((todo) => {
+                if (todo.id === id) {
+                    return { ...todo, isCompleted: !todo.isCompleted };
+                }
+                return todo;
+            });
+        });
+    };
+
+    useEffect(() => {
+        localStorage.setItem("todoList", JSON.stringify(todoList));
+    }, [todoList]);
 
     return (
         <div className="bg-white place-self-center w-11/12 max-w-md flex flex-col p-7 min-h-[550px] rounded-xl">
@@ -48,7 +73,16 @@ export default function Todo() {
             </div>
             <div className="">
                 {todoList.map((item, index) => {
-                    return <TodoItems key={index} text={item.text} />;
+                    return (
+                        <TodoItems
+                            key={index}
+                            text={item.text}
+                            id={item.id}
+                            isCompleted={item.isCompleted}
+                            deleteTodo={deleteTodo}
+                            toggle={toggle}
+                        />
+                    );
                 })}
             </div>
         </div>
